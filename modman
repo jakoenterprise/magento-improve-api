@@ -1,0 +1,9 @@
+app/code/community/Bubble/Api/Block/Adminhtml/System/Config/Fieldset/*            app/code/community/Bubble/Api/Block/Adminhtml/System/Config/Fieldset/
+app/code/community/Bubble/Api/etc/*                                               app/code/community/Bubble/Api/etc/
+app/code/community/Bubble/Api/Helper/Data.php                                     app/code/community/Bubble/Api/Helper/
+app/code/community/Bubble/Api/Helper/Catalog/*                                    app/code/community/Bubble/Api/Helper/Catalog/
+app/code/community/Bubble/Api/Model/Catalog/Product/Api.php                       app/code/community/Bubble/Api/Model/Catalog/Product/
+app/code/community/Bubble/Api/Model/Catalog/Product/Api/*                         app/code/community/Bubble/Api/Model/Catalog/Product/Api/
+app/design/adminhtml/base/default/template/bubble/api/system/config/fieldset/*    app/design/adminhtml/base/default/template/bubble/api/system/config/fieldset/
+app/etc/modules/*                                                                 app/etc/modules/
+app/locale/fr_FR/*                                                                app/locale/fr_FR/
