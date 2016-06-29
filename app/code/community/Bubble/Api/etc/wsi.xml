@@ -19,11 +19,39 @@
                     <xsd:element minOccurs="0" maxOccurs="unbounded" name="complexObjectArray" type="typens:complexMultiFilter" />
                 </xsd:sequence>
             </xsd:complexType>
+            <xsd:complexType name="catalogProductCreateImageEntity">
+                <xsd:sequence>
+                    <xsd:element name="filename" type="xsd:string" />
+                    <xsd:element name="label" type="xsd:string" />
+                    <xsd:element name="position" type="xsd:string" />
+                    <xsd:element name="exclude" type="xsd:string" />
+                    <xsd:element name="url" type="xsd:string" />
+                    <xsd:element name="types" type="typens:ArrayOfString" />
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="catalogProductCreateImageEntityArray">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" maxOccurs="unbounded" name="complexObjectArray" type="typens:catalogProductCreateImageEntity" />
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="catalogProductCreateStoreVisibilityEntity">
+                <xsd:sequence>
+                    <xsd:element name="store_id" type="xsd:string" />
+                    <xsd:element name="visibility" type="xsd:string" />
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="catalogProductCreateStoreVisibilityEntityArray">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" maxOccurs="unbounded" name="complexObjectArray" type="typens:catalogProductCreateStoreVisibilityEntity" />
+                </xsd:sequence>
+            </xsd:complexType>
             <xsd:complexType name="catalogProductCreateEntity">
                 <xsd:sequence>
                     <xsd:element name="associated_skus" type="typens:ArrayOfString" minOccurs="0" />
                     <xsd:element name="configurable_attributes" type="typens:ArrayOfString" minOccurs="0" />
                     <xsd:element name="price_changes" type="typens:complexMultiArray" minOccurs="0" />
+                    <xsd:element name="images" type="typens:catalogProductCreateImageEntityArray" minOccurs="0" />
+                    <xsd:element name="store_visibility" type="typens:catalogProductCreateStoreVisibilityEntityArray" minOccurs="0" />
                 </xsd:sequence>
             </xsd:complexType>
         </xsd:schema>

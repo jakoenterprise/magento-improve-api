@@ -9,7 +9,52 @@ class Bubble_Api_Model_Catalog_Product_Api extends Mage_Catalog_Model_Product_Ap
             $set = Mage::helper('bubble_api')->getAttributeSetIdByName($set);
         }
 
-        return parent::create($type, $set, $sku, $productData, $store);
+        $ret = parent::create($type, $set, $sku, $productData, $store);
+
+        //check if all simples are associated
+        $newProduct = Mage::getModel('catalog/product')->load($ret);
+        if($type == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            if(count($productData['associated_skus']) != count($newProduct->getTypeInstance()->getUsedProductIds())) {
+                $error = Mage::helper('bubble_api/catalog_product')->__('Not all products associated! Associated products: %s',
+                    $newProduct->getConfigurableProductsData());
+                $this->_fault('data_invalid', $error);
+            }
+        }
+
+        //set visibilities after product was saved
+        if (isset($productData['store_visibility'])) {
+            $storeVisibility = (array)$productData['store_visibility'];
+            Mage::helper('bubble_api/catalog_product')->setStoreVisibility($newProduct, $storeVisibility);
+        }
+
+        return $ret;
+    }
+
+    public function update($productId, $productData, $store = null, $identifierType = null)
+    {
+        $ret = parent::update($productId, $productData, $store, $identifierType);
+
+        //check if all simples are associated
+        $product = $this->_getProduct($productId, $store, $identifierType);
+
+        if($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            if(property_exists($productData, 'associated_skus')) {
+                $newAssociatedSKUs = count($product->getTypeInstance()->getUsedProductIds());
+                if(count((array) $productData->associated_skus) != $newAssociatedSKUs && count((array) $productData->add_associated_skus) != $newAssociatedSKUs) {
+                    $error = Mage::helper('bubble_api/catalog_product')->__('Not all products associated! Associated products: %s',
+                        $product->getConfigurableProductsData());
+                    $this->_fault('data_invalid', $error);
+                }
+            }
+        }
+
+        //set visibilities after product was saved
+        if (isset($productData['store_visibility'])) {
+            $storeVisibility = (array)$productData['store_visibility'];
+            Mage::helper('bubble_api/catalog_product')->setStoreVisibility($product, $storeVisibility);
+        }
+
+        return $ret;
     }
 
     protected function _prepareDataForSave($product, $productData)
@@ -49,7 +94,16 @@ class Bubble_Api_Model_Catalog_Product_Api extends Mage_Catalog_Model_Product_Ap
             $simpleSkus = $productData['associated_skus'];
             $priceChanges = isset($productData['price_changes']) ? $productData['price_changes'] : array();
             $configurableAttributes = isset($productData['configurable_attributes']) ? $productData['configurable_attributes'] : array();
-            Mage::helper('bubble_api/catalog_product')->associateProducts($product, $simpleSkus, $priceChanges, $configurableAttributes);
+            Mage::helper('bubble_api/catalog_product')->associateProducts($product, $simpleSkus, $priceChanges, $configurableAttributes, False);
+        } elseif (isset($productData['add_associated_skus'])) {
+            $simpleSkus = $productData['add_associated_skus'];
+            $priceChanges = isset($productData['price_changes']) ? $productData['price_changes'] : array();
+            $configurableAttributes = isset($productData['configurable_attributes']) ? $productData['configurable_attributes'] : array();
+            Mage::helper('bubble_api/catalog_product')->associateProducts($product, $simpleSkus, $priceChanges, $configurableAttributes, True);
+        }
+        if (isset($productData['images'])) {
+            $images = $productData['images'];
+            Mage::helper('bubble_api/catalog_product')->addImages($product, $images);
         }
     }
 }

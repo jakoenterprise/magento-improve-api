@@ -12,9 +12,14 @@ It allows you to:
 
 ## Installation
 
-### Magento CE 1.6.x, 1.7.x
+### Magento CE 1.6.x, 1.7.x, 1.8.x, 1.9.x
 
-Install with [modgit](https://github.com/jreinke/modgit):
+Install with modman (after modman init):
+
+    $ cd /path/to/magento
+    $ modman clone bubble-api https://github.com/marcoandreini/magento-improve-api.git
+
+or install with [modgit](https://github.com/jreinke/modgit):
 
     $ cd /path/to/magento
     $ modgit init

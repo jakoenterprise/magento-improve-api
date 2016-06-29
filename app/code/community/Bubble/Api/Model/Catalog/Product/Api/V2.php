@@ -2,6 +2,43 @@
 
 class Bubble_Api_Model_Catalog_Product_Api_V2 extends Mage_Catalog_Model_Product_Api_V2
 {
+ 	/**
+     * Retrieve product info
+     *
+     * @param int|string $productId
+     * @param string|int $store
+     * @param stdClass   $attributes
+     * @param string     $identifierType
+     * @return array
+     */
+    public function info($productId, $store = null, $attributes = null, $identifierType = null) {
+
+		// make sku flag case-insensitive
+        if (!empty($identifierType)) {
+            $identifierType = strtolower($identifierType);
+        }
+
+        $product = $this->_getProduct($productId, $store, $identifierType);
+
+        $result = parent::info($productId, $store, $attributes, $identifierType);
+
+		$childrenId = Mage::getModel('catalog/product_type_configurable')->setProduct($product)->getUsedProductCollection()
+			->addAttributeToSelect('*')
+			->addFilterByRequiredOptions()
+			->getAllIds();
+
+		$children = Mage::getModel('catalog/product')
+			->getCollection()
+			->addAttributeToFilter('entity_id', array('in' => $childrenId));
+
+		$childrenSkus = array();
+		foreach($children as $child) {
+			 $childrenSkus[] = $child->getSku();
+		}
+		$result['associated_skus'] = $childrenSkus;
+		return $result;
+	}
+
     public function create($type, $set, $sku, $productData, $store = null)
     {
         // Allow attribute set name instead of id
@@ -9,14 +46,68 @@ class Bubble_Api_Model_Catalog_Product_Api_V2 extends Mage_Catalog_Model_Product
             $set = Mage::helper('bubble_api')->getAttributeSetIdByName($set);
         }
 
-        return parent::create($type, $set, $sku, $productData, $store);
+        $ret = parent::create($type, $set, $sku, $productData, $store);
+
+        //check if all simples are associated
+        $newProduct = Mage::getModel('catalog/product')->load($ret);
+        if($type == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            if(property_exists($productData, 'associated_skus')) {
+                $simpleSkus = (array) $productData->associated_skus;
+                if(count($simpleSkus) != count($newProduct->getTypeInstance()->getUsedProductIds()))
+                {
+                  $error = Mage::helper('bubble_api/catalog_product')->__('Not all products associated! Associated products: %s',
+                      $newProduct->getConfigurableProductsData());
+                  $this->_fault('data_invalid', $error);
+                }
+            }
+
+        }
+
+        //set visibilities after product was saved
+        if (property_exists($productData, 'store_visibility')) {
+            $storeVisibility = (array)$productData->store_visibility;
+            Mage::helper('bubble_api/catalog_product')->setStoreVisibility($newProduct, $storeVisibility);
+        }
+
+        return $ret;
+    }
+
+    public function update($productId, $productData, $store = null, $identifierType = null)
+    {
+
+    	Mage::log('update called = '. $productId, null, 'ikom.log');
+
+    	$ret = parent::update($productId, $productData, $store, $identifierType);
+
+        //check if all simples are associated
+        $product = $this->_getProduct($productId, $store, $identifierType);
+
+        if($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE) {
+            if(property_exists($productData, 'associated_skus')) {
+                $newAssociatedSKUs = count($product->getTypeInstance()->getUsedProductIds());
+                if(count((array) $productData->associated_skus) != $newAssociatedSKUs && count((array) $productData->add_associated_skus) != $newAssociatedSKUs)
+                {
+                    $error = Mage::helper('bubble_api/catalog_product')->__('Not all products associated! Associated products: %s',
+                        $product->getConfigurableProductsData());
+                    $this->_fault('data_invalid', $error);
+                }
+            }
+        }
+
+        //set visibilities after product was saved
+        if (property_exists($productData, 'store_visibility')) {
+            $storeVisibility = (array)$productData->store_visibility;
+            Mage::helper('bubble_api/catalog_product')->setStoreVisibility($product, $storeVisibility);
+        }
+
+        return $ret;
     }
 
     protected function _prepareDataForSave($product, $productData)
     {
         /* @var $product Mage_Catalog_Model_Product */
 
-        if (property_exists($productData, 'categories')) {
+    	if (property_exists($productData, 'categories')) {
             $categoryIds = Mage::helper('bubble_api/catalog_product')
                 ->getCategoryIdsByNames((array) $productData->categories);
             if (!empty($categoryIds)) {
@@ -71,8 +162,23 @@ class Bubble_Api_Model_Catalog_Product_Api_V2 extends Mage_Catalog_Model_Product
             $simpleSkus = (array) $productData->associated_skus;
             $priceChanges = array();
             if (property_exists($productData, 'price_changes')) {
-                if (key($productData->price_changes) === 0) {
-                    $priceChanges = $productData->price_changes[0];
+                if (key($productData->price_changes) != 0) {
+                    $priceChanges = array($productData->price_changes);
+                } else {
+                	$priceChanges = $productData->price_changes;
+                }
+            }
+            $configurableAttributes = array();
+            if (property_exists($productData, 'configurable_attributes')) {
+                $configurableAttributes = $productData->configurable_attributes;
+            }
+            Mage::helper('bubble_api/catalog_product')->associateProducts($product, $simpleSkus, $priceChanges, $configurableAttributes, False);
+        } elseif (property_exists($productData, 'add_associated_skus')) {
+            $simpleSkus = (array) $productData->add_associated_skus;
+            $priceChanges = array();
+            if (property_exists($productData, 'price_changes')) {
+                if (key($productData->price_changes) != 0) {
+                    $priceChanges = array($productData->price_changes);
                 } else {
                     $priceChanges = $productData->price_changes;
                 }
@@ -81,7 +187,12 @@ class Bubble_Api_Model_Catalog_Product_Api_V2 extends Mage_Catalog_Model_Product
             if (property_exists($productData, 'configurable_attributes')) {
                 $configurableAttributes = $productData->configurable_attributes;
             }
-            Mage::helper('bubble_api/catalog_product')->associateProducts($product, $simpleSkus, $priceChanges, $configurableAttributes);
+            Mage::helper('bubble_api/catalog_product')->associateProducts($product, $simpleSkus, $priceChanges, $configurableAttributes, True);
+        }
+
+        if (property_exists($productData, 'images')) {
+            $images = (array)$productData->images;
+            Mage::helper('bubble_api/catalog_product')->addImages($product, $images);
         }
     }
 }

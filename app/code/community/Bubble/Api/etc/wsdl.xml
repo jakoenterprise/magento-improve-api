@@ -6,11 +6,82 @@
              name="{{var wsdl.name}}" targetNamespace="urn:{{var wsdl.name}}">
     <types>
         <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:Magento">
+             <complexType name="catalogProductReturnEntity">
+                <all>
+                    <element name="product_id" type="xsd:string" minOccurs="0"/>
+                    <element name="sku" type="xsd:string" minOccurs="0"/>
+                    <element name="set" type="xsd:string" minOccurs="0"/>
+                    <element name="type" type="xsd:string" minOccurs="0"/>
+                    <element name="categories" type="typens:ArrayOfString" minOccurs="0"/>
+                    <element name="websites" type="typens:ArrayOfString" minOccurs="0"/>
+                    <element name="created_at" type="xsd:string" minOccurs="0"/>
+                    <element name="updated_at" type="xsd:string" minOccurs="0"/>
+                    <element name="type_id" type="xsd:string" minOccurs="0"/>
+                    <element name="name" type="xsd:string" minOccurs="0"/>
+                    <element name="description" type="xsd:string" minOccurs="0"/>
+                    <element name="short_description" type="xsd:string" minOccurs="0"/>
+                    <element name="weight" type="xsd:string" minOccurs="0"/>
+                    <element name="status" type="xsd:string" minOccurs="0"/>
+                    <element name="url_key" type="xsd:string" minOccurs="0"/>
+                    <element name="url_path" type="xsd:string" minOccurs="0"/>
+                    <element name="visibility" type="xsd:string" minOccurs="0"/>
+                    <element name="category_ids" type="typens:ArrayOfString" minOccurs="0"/>
+                    <element name="website_ids" type="typens:ArrayOfString" minOccurs="0"/>
+                    <element name="has_options" type="xsd:string" minOccurs="0"/>
+                    <element name="gift_message_available" type="xsd:string" minOccurs="0"/>
+                    <element name="price" type="xsd:string" minOccurs="0"/>
+                    <element name="special_price" type="xsd:string" minOccurs="0"/>
+                    <element name="special_from_date" type="xsd:string" minOccurs="0"/>
+                    <element name="special_to_date" type="xsd:string" minOccurs="0"/>
+                    <element name="tax_class_id" type="xsd:string" minOccurs="0"/>
+                    <element name="tier_price" type="typens:catalogProductTierPriceEntityArray" minOccurs="0"/>
+                    <element name="meta_title" type="xsd:string" minOccurs="0"/>
+                    <element name="meta_keyword" type="xsd:string" minOccurs="0"/>
+                    <element name="meta_description" type="xsd:string" minOccurs="0"/>
+                    <element name="custom_design" type="xsd:string" minOccurs="0"/>
+                    <element name="custom_layout_update" type="xsd:string" minOccurs="0"/>
+                    <element name="options_container" type="xsd:string" minOccurs="0"/>
+                    <element name="additional_attributes" type="typens:associativeArray" minOccurs="0"/>
+                    <element name="associated_skus" type="typens:ArrayOfString" minOccurs="0"/>
+                </all>
+            </complexType>
+            <complexType name="catalogProductCreateImageEntity">
+                <all>
+                    <element name="filename" type="xsd:string"/>
+                    <element name="label" type="xsd:string"/>
+                    <element name="position" type="xsd:string"/>
+                    <element name="exclude" type="xsd:string"/>
+                    <element name="url" type="xsd:string"/>
+                    <element name="types" type="typens:ArrayOfString"/>
+                </all>
+            </complexType>
+            <complexType name="catalogProductCreateImageEntityArray">
+                <complexContent>
+                    <restriction base="soapenc:Array">
+                        <attribute ref="soapenc:arrayType" wsdl:arrayType="typens:catalogProductCreateImageEntity[]"/>
+                    </restriction>
+                </complexContent>
+            </complexType>
+            <complexType name="catalogProductCreateStoreVisibilityEntity">
+                <all>
+                    <element name="store_id" type="xsd:string"/>
+                    <element name="visibility" type="xsd:string"/>
+                </all>
+            </complexType>
+            <complexType name="catalogProductCreateStoreVisibilityEntityArray">
+                <complexContent>
+                    <restriction base="soapenc:Array">
+                        <attribute ref="soapenc:arrayType" wsdl:arrayType="typens:catalogProductCreateStoreVisibilityEntity[]"/>
+                    </restriction>
+                </complexContent>
+            </complexType>
             <complexType name="catalogProductCreateEntity">
                 <all>
                     <element name="associated_skus" type="typens:ArrayOfString" minOccurs="0"/>
                     <element name="configurable_attributes" type="typens:ArrayOfString" minOccurs="0"/>
-                    <element name="price_changes" type="typens:associativeArray" minOccurs="0" />
+                    <element name="price_changes" type="typens:complexFilterArray" minOccurs="0" />
+                    <element name="images" type="typens:catalogProductCreateImageEntityArray" minOccurs="0"/>
+                    <element name="store_visibility" type="typens:catalogProductCreateStoreVisibilityEntityArray" minOccurs="0"/>
                 </all>
             </complexType>
         </schema>

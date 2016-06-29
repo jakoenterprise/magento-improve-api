@@ -12,6 +12,9 @@
             </bubble_api>
         </helpers>
         <models>
+            <bubble_api>
+                <class>Bubble_Api_Model</class>
+            </bubble_api>
             <catalog>
                 <rewrite>
                     <product_api>Bubble_Api_Model_Catalog_Product_Api</product_api>
