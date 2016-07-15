@@ -12,30 +12,35 @@ class Bubble_Api_Helper_Catalog_Product extends Mage_Core_Helper_Abstract
      */
     public function associateProducts(Mage_Catalog_Model_Product $product, $simpleSkus, $priceChanges = array(), $configurableAttributes = array(), $add = False)
     {
-        if (!empty($simpleSkus)) {
-            $newProductIds = Mage::getModel('catalog/product')->getCollection()
-                ->addFieldToFilter('sku', array('in' => (array) $simpleSkus))
-                ->addFieldToFilter('type_id', Mage_Catalog_Model_Product_Type::TYPE_SIMPLE)
+        if (empty($simpleSkus)) {
+            return $this;
+        }
+
+        $newProductIds = Mage::getModel('catalog/product')->getCollection()
+            ->addFieldToFilter('sku', array('in' => (array) $simpleSkus))
+            ->addFieldToFilter('type_id', Mage_Catalog_Model_Product_Type::TYPE_SIMPLE)
+            ->getAllIds();
+
+        if ($add) {
+            $oldProductIds = Mage::getModel('catalog/product_type_configurable')
+                ->setProduct($product)
+                ->getUsedProductCollection()
+                ->addAttributeToSelect('*')
+                ->addFilterByRequiredOptions()
                 ->getAllIds();
 
-            if ($add) {
-                $oldProductIds = Mage::getModel('catalog/product_type_configurable')->setProduct($product)->getUsedProductCollection()
-                    ->addAttributeToSelect('*')
-                    ->addFilterByRequiredOptions()
-                    ->getAllIds();
-                $usedProductIds = array_unique(array_merge($newProductIds, $oldProductIds));
-            } else {
-                $usedProductIds = array_unique($newProductIds);
-            }
+            $allProductIds = array_unique(array_merge($newProductIds, $oldProductIds));
+        } else {
+            $allProductIds = array_unique($newProductIds);
+        }
 
-            if (!empty($newProductIds) && $product->isConfigurable()) {
-                $this->_initConfigurableAttributesData($product, $newProductIds, $priceChanges, $configurableAttributes);
-            }
+        if (!empty($allProductIds) && $product->isConfigurable()) {
+            $this->_initConfigurableAttributesData($product, $allProductIds, $priceChanges, $configurableAttributes);
+        }
 
-            if (!empty($usedProductIds) && $product->isGrouped()) {
-                $relations = array_fill_keys($usedProductIds, array('qty' => 0, 'position' => 0));
-                $product->setGroupedLinkData($relations);
-            }
+        if (!empty($allProductIds) && $product->isGrouped()) {
+            $relations = array_fill_keys($allProductIds, array('qty' => 0, 'position' => 0));
+            $product->setGroupedLinkData($relations);
         }
 
         return $this;
