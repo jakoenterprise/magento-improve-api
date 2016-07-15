@@ -77,6 +77,7 @@
             </complexType>
             <complexType name="catalogProductCreateEntity">
                 <all>
+                    <element name="add_associated_skus" type="typens:ArrayOfString" minOccurs="0"/>
                     <element name="associated_skus" type="typens:ArrayOfString" minOccurs="0"/>
                     <element name="configurable_attributes" type="typens:ArrayOfString" minOccurs="0"/>
                     <element name="price_changes" type="typens:complexFilterArray" minOccurs="0" />
