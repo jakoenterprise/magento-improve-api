@@ -21,18 +21,20 @@ class Bubble_Api_Helper_Catalog_Product extends Mage_Core_Helper_Abstract
             ->addFieldToFilter('type_id', Mage_Catalog_Model_Product_Type::TYPE_SIMPLE)
             ->getAllIds();
 
-        if ($add) {
-            $oldProductIds = Mage::getModel('catalog/product_type_configurable')
-                ->setProduct($product)
-                ->getUsedProductCollection()
-                ->addAttributeToSelect('*')
-                ->addFilterByRequiredOptions()
-                ->getAllIds();
 
-            $allProductIds = array_unique(array_merge($newProductIds, $oldProductIds));
-        } else {
-            $allProductIds = array_unique($newProductIds);
-        }
+        $allProductIds = array_unique($newProductIds);
+        // if ($add) {
+        //     $oldProductIds = Mage::getModel('catalog/product_type_configurable')
+        //         ->setProduct($product)
+        //         ->getUsedProductCollection()
+        //         ->addAttributeToSelect('*')
+        //         ->addFilterByRequiredOptions()
+        //         ->getAllIds();
+
+        //     $allProductIds = array_unique(array_merge($newProductIds, $oldProductIds));
+        // } else {
+        //     $allProductIds = array_unique($newProductIds);
+        // }
 
         if (!empty($allProductIds) && $product->isConfigurable()) {
             $this->_initConfigurableAttributesData($product, $allProductIds, $priceChanges, $configurableAttributes);
