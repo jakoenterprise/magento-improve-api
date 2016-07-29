@@ -21,27 +21,34 @@ class Bubble_Api_Helper_Catalog_Product extends Mage_Core_Helper_Abstract
             ->addFieldToFilter('type_id', Mage_Catalog_Model_Product_Type::TYPE_SIMPLE)
             ->getAllIds();
 
+        Mage::log('new product ids', null, 'api.log');
+        Mage::log($newProductIds, null, 'api.log');
 
-        $allProductIds = array_unique($newProductIds);
-        // if ($add) {
-        //     $oldProductIds = Mage::getModel('catalog/product_type_configurable')
-        //         ->setProduct($product)
-        //         ->getUsedProductCollection()
-        //         ->addAttributeToSelect('*')
-        //         ->addFilterByRequiredOptions()
-        //         ->getAllIds();
+        if ($add) {
+            $oldProductIds = Mage::getModel('catalog/product_type_configurable')
+                ->setProduct($product)
+                ->getUsedProductCollection()
+                ->addAttributeToSelect('*')
+                ->addFilterByRequiredOptions()
+                ->getAllIds();
 
-        //     $allProductIds = array_unique(array_merge($newProductIds, $oldProductIds));
-        // } else {
-        //     $allProductIds = array_unique($newProductIds);
-        // }
+            $allProductIds = array_unique(array_merge($newProductIds, $oldProductIds));
+        } else {
+            $allProductIds = array_unique($newProductIds);
+        }
+
+        Mage::log('all product ids', null, 'api.log');
+        Mage::log($allProductIds, null, 'api.log');
 
         if (!empty($allProductIds) && $product->isConfigurable()) {
+            Mage::log('init configurable attributes', null, 'api.log');
             $this->_initConfigurableAttributesData($product, $allProductIds, $priceChanges, $configurableAttributes);
         }
 
         if (!empty($allProductIds) && $product->isGrouped()) {
+            Mage::log('set grouped link data', null, 'api.log');
             $relations = array_fill_keys($allProductIds, array('qty' => 0, 'position' => 0));
+            Mage::log($relations, null, 'api.log');
             $product->setGroupedLinkData($relations);
         }
 
@@ -127,11 +134,20 @@ class Bubble_Api_Helper_Catalog_Product extends Mage_Core_Helper_Abstract
         	$decoded[$attributeCode][$optionText] = $priceChange;
         }
         $priceChanges = $decoded;
+        Mage::log('prices changes', null, 'api.log');
+        Mage::log($priceChanges, null, 'api.log');
 
-        $mainProduct->setConfigurableProductsData(array_flip($simpleProductIds));
+        $configurableProductsData = array_flip($simpleProductIds);
+        Mage::log('configurable products data', null, 'api.log');
+        Mage::log($configurableProductsData, null, 'api.log');
+
+        $mainProduct->setConfigurableProductsData($configurableProductsData);
         $productType = $mainProduct->getTypeInstance(true);
         $productType->setProduct($mainProduct);
+
         $attributesData = $productType->getConfigurableAttributesAsArray();
+        Mage::log('attributes data', null, 'api.log');
+        Mage::log($attributesData, null, 'api.log');
 
         if (empty($attributesData)) {
             // Auto generation if configurable product has no attribute
@@ -184,6 +200,10 @@ class Bubble_Api_Helper_Catalog_Product extends Mage_Core_Helper_Abstract
                     );
                 }
             }
+
+            Mage::log('modified attributes data', null, 'api.log');
+            Mage::log($attributesData, null, 'api.log');
+
             $mainProduct->setConfigurableAttributesData($attributesData);
         }
 
