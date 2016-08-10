@@ -77,6 +77,9 @@
             </complexType>
             <complexType name="catalogProductCreateEntity">
                 <all>
+                    <element name="msrp_enabled" type="xsd:string" minOccurs="0"/>
+                    <element name="msrp_display_actual_price_type" type="xsd:string" minOccurs="0"/>
+                    <element name="msrp" type="xsd:string" minOccurs="0"/>
                     <element name="add_associated_skus" type="typens:ArrayOfString" minOccurs="0"/>
                     <element name="associated_skus" type="typens:ArrayOfString" minOccurs="0"/>
                     <element name="configurable_attributes" type="typens:ArrayOfString" minOccurs="0"/>
