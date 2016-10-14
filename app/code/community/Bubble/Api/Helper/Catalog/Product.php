@@ -162,13 +162,18 @@ class Bubble_Api_Helper_Catalog_Product extends Mage_Core_Helper_Abstract
         }
         if (!empty($configurableAttributes) && is_array($configurableAttributes)){
             foreach ($attributesData as $idx => $val) {
-                if (!in_array($val['attribute_id'], $configurableAttributes)) {
+                $id_exists = in_array($val['attribute_id'], $configurableAttributes);
+                $code_exists = in_array($val['attribute_code'], $configurableAttributes);
+
+                // Allow for both ID and codes in the `configurable_attributes`
+                // parameter.
+                if (!$id_exists && !$code_exists) {
                     unset($attributesData[$idx]);
                 }
             }
         }
 
-	    $products = Mage::getModel('catalog/product')->getCollection()
+        $products = Mage::getModel('catalog/product')->getCollection()
             ->addIdFilter($simpleProductIds);
 
         if (count($products)) {
